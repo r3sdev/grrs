@@ -12,10 +12,17 @@ struct Cli {
     path: std::path::PathBuf,
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Cli::parse();
     let path = &args.path;
-    let file = File::open(path).unwrap();
+    let result = File::open(path);
+    let file = match result {
+        Ok(content) => content,
+        Err(error) => {
+            return Err(error.into());
+        }
+    };
+
     let reader = BufReader::new(file);
 
     for line in reader.lines() {
@@ -25,4 +32,5 @@ fn main() {
             println!("{}", line);
         }
     }
+    Ok(())
 }

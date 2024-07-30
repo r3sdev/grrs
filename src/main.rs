@@ -16,8 +16,15 @@ fn main() {
     let args = Cli::parse();
     let path = &args.path;
 
-    let f = File::open(path).expect("Unable to open file");
-    let reader = BufReader::new(f);
+    let result = File::open(path);
+    let file = match result {
+        Ok(file) => file,
+        Err(error) => {
+            panic!("Can't deal with {}, just exit here", error);
+        }
+    };
+
+    let reader = BufReader::new(file);
 
     for line in reader.lines() {
         let line = line.expect("Unable to read line");

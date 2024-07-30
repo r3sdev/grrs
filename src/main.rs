@@ -13,10 +13,6 @@ struct Cli {
     path: std::path::PathBuf,
 }
 
-#[derive(Debug)]
-#[allow(dead_code)]
-struct CustomError(String);
-
 fn main() -> Result<()> {
     let args = Cli::parse();
     let path = &args.path;

@@ -12,10 +12,15 @@ struct Cli {
     path: std::path::PathBuf,
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+#[derive(Debug)]
+#[allow(dead_code)]
+struct CustomError(String);
+
+fn main() -> Result<(), CustomError> {
     let args = Cli::parse();
     let path = &args.path;
-    let file = File::open(path)?;
+    let file = File::open(path)
+        .map_err(|err| CustomError(format!("Error reading `{}`: {}", path.display(), err)))?;
     let reader = BufReader::new(file);
 
     for line in reader.lines() {

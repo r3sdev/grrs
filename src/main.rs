@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::{BufReader, Read};
 
 use anyhow::{Context, Result};
 use clap::Parser;
@@ -13,18 +13,10 @@ struct Cli {
     path: std::path::PathBuf,
 }
 
-fn find_matches(content: BufReader<File>, pattern: &str) {
-    for (index, line) in content.lines().enumerate() {
-        let line = match line {
-            Ok(line) => line,
-            Err(_) => {
-                eprintln!("Could not read line at index: {}", index);
-                continue;
-            }
-        };
-
-        if line.contains(&pattern) {
-            println!("{}", line);
+fn find_matches(content: &str, pattern: &str, mut writer: impl std::io::Write) {
+    for line in content.lines() {
+        if line.contains(pattern) {
+            writeln!(writer, "{}", line).expect("TODO: panic message");
         }
     }
 }
@@ -32,10 +24,20 @@ fn find_matches(content: BufReader<File>, pattern: &str) {
 fn main() -> Result<()> {
     let args = Cli::parse();
     let path = &args.path;
-    let file =
-        File::open(path).with_context(|| format!("could not read file `{}`", path.display()))?;
+    let mut file = BufReader::new(
+        File::open(path).with_context(|| format!("could not read file `{}`", path.display()))?,
+    );
+    let mut content = String::new();
+    file.read_to_string(&mut content).unwrap();
 
-    find_matches(BufReader::new(file), &args.pattern);
+    find_matches(&content, &args.pattern, &mut std::io::stdout());
 
     Ok(())
+}
+
+#[test]
+fn find_a_match() {
+    let mut result = Vec::new();
+    find_matches("lorem ipsum\ndolor sit amet", "lorem", &mut result);
+    assert_eq!(result, b"lorem ipsum\n");
 }

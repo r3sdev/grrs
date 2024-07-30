@@ -25,8 +25,8 @@ fn main() -> Result<()> {
 
     let reader = BufReader::new(file);
 
-    for line in reader.lines() {
-        let line = line.expect("Unable to read line");
+    for (index, line) in reader.lines().enumerate() {
+        let line = line.with_context(|| format!("could not read line `{}`", index))?;
 
         if line.contains(&args.pattern) {
             println!("{}", line);

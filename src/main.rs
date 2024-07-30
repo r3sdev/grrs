@@ -13,20 +13,29 @@ struct Cli {
     path: std::path::PathBuf,
 }
 
+fn find_matches(content: BufReader<File>, pattern: &str) {
+    for (index, line) in content.lines().enumerate() {
+        let line = match line {
+            Ok(line) => line,
+            Err(_) => {
+                eprintln!("Could not read line at index: {}", index);
+                continue;
+            }
+        };
+
+        if line.contains(&pattern) {
+            println!("{}", line);
+        }
+    }
+}
+
 fn main() -> Result<()> {
     let args = Cli::parse();
     let path = &args.path;
     let file =
         File::open(path).with_context(|| format!("could not read file `{}`", path.display()))?;
 
-    let reader = BufReader::new(file);
+    find_matches(BufReader::new(file), &args.pattern);
 
-    for (index, line) in reader.lines().enumerate() {
-        let line = line.with_context(|| format!("could not read line `{}`", index))?;
-
-        if line.contains(&args.pattern) {
-            println!("{}", line);
-        }
-    }
     Ok(())
 }

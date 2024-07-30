@@ -15,15 +15,7 @@ struct Cli {
 fn main() {
     let args = Cli::parse();
     let path = &args.path;
-
-    let result = File::open(path);
-    let file = match result {
-        Ok(file) => file,
-        Err(error) => {
-            panic!("Can't deal with {}, just exit here", error);
-        }
-    };
-
+    let file = File::open(path).unwrap();
     let reader = BufReader::new(file);
 
     for line in reader.lines() {

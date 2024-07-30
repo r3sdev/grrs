@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
+use anyhow::{Context, Result};
 use clap::Parser;
 
 /// Search for a pattern in a file and display the lines that contain it.
@@ -16,11 +17,12 @@ struct Cli {
 #[allow(dead_code)]
 struct CustomError(String);
 
-fn main() -> Result<(), CustomError> {
+fn main() -> Result<()> {
     let args = Cli::parse();
     let path = &args.path;
-    let file = File::open(path)
-        .map_err(|err| CustomError(format!("Error reading `{}`: {}", path.display(), err)))?;
+    let file =
+        File::open(path).with_context(|| format!("could not read file `{}`", path.display()))?;
+
     let reader = BufReader::new(file);
 
     for line in reader.lines() {
